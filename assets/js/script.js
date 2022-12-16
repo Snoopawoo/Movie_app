@@ -1,61 +1,41 @@
-var searchInput = document.querySelector('.search');
-var itemWrapper = document.querySelector('main');
+var searchInput = $('.search');
+var itemWrapper = $('main');
 
 function displayMatches(matches) {
-    itemWrapper.innerHTML = '';
-    for (var match of matches) {
-        itemWrapper.insertAdjacentHTML('beforeend',`
-        <div style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${match.image_url});
-        }' class="movie-item">
-        <h3>${match.title}</h3>
-        <p>
-          ${match.description}
-        </p>
-        <a href="${match.imdb_url}">More detailes</a>
-      </div>
-      `);
-    }
+  itemWrapper.html('');
+
+  if(!matches) {
+    return itemWrapper.html(`<p class='no-search'>No resoults found.</p>`);
+  }
+  for (var match of matches) {
+       itemWrapper.append(`
+       <div style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${match.Poster});
+       }' class="movie-item">
+      <h3>${match.Title}</h3>
+       <p>
+         Release Year: ${match.Year}
+       </p>
+       <a href="https://www.imdb.com/title/${match.imdbID}" target='_blank'>More detailes</a>
+    </div>
+    `);
+   }
+  
 }
 
 function getMovieData(event) {
     var keyCode = event.keyCode;
-    var searchText = searchInput.value.trim().toLowerCase();
+    var searchText = searchInput.val().trim();
 
     if (keyCode === 13 && searchText) {
-        var matches = [];
-        for (var movie of movieData) {
-            if (movie.title.toLowerCase().includes(searchText)) {
-                matches.push(movie);
-            }
-        }
-        var responsePromise = fetch('https://www.omdbapi.com/?apikey=ee479d&t=jurassic%20park');
-
-        function handleResponse(responseObj)  {
-          return responseObj.json();
-        }
-        
-        responsePromise
-          .then(handleResponse)
-          .then(function  (data) {
-            console.log(data);
-          });
-          
-        //  responsePromise.then(function(responseObj){
-        //   var dataPromise = responseObj.json();
-
-        //   dataPromise.then(function(data){
-
-        //   });
-        //  });
-
-
-
-        displayMatches(matches);
+        $.get(`https://www.omdbapi.com/?apikey=ee479d&s=${searchText}`)
+          .then(function (data) {
+            displayMatches(data.Search);
+         });
       }
 };
 
 function init() {
-    searchInput.addEventListener('keydown', getMovieData);
+    searchInput.keydown(getMovieData);
 }
 init();
 
